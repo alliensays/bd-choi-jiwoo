@@ -5,6 +5,12 @@ import type {
   ClotheslinePhoto,
   ComebackEra,
   HobbySection,
+  MomentPhoto,
+  MemberLetter,
+  BoardMessage,
+  JiwooQuiz,
+  QuizQuestion,
+  QuizResultRange,
 } from "../data"
 
 interface AdminPanelProps {
@@ -13,11 +19,19 @@ interface AdminPanelProps {
   predebutPhotos: ClotheslinePhoto[]
   comebacks: ComebackEra[]
   hobbySections: HobbySection[]
+  momentPhotos: MomentPhoto[]
+  memberLetters: MemberLetter[]
+  hachuBoardMessages: BoardMessage[]
+  jiwooQuiz: JiwooQuiz
   onUpdateHomeHero: (next: HomeHero) => void
   onUpdateHomePhotos: (next: HomePhoto[]) => void
   onUpdatePredebutPhotos: (next: ClotheslinePhoto[]) => void
   onUpdateComebacks: (next: ComebackEra[]) => void
   onUpdateHobbySections: (next: HobbySection[]) => void
+  onUpdateMomentPhotos: (next: MomentPhoto[]) => void
+  onUpdateMemberLetters: (next: MemberLetter[]) => void
+  onUpdateBoardMessages: (next: BoardMessage[]) => void
+  onUpdateJiwooQuiz: (next: JiwooQuiz) => void
   onLogout: () => void
   onSave?: () => void
 }
@@ -26,6 +40,10 @@ const tabs = [
   { id: "home", label: "Home" },
   { id: "predebut", label: "Pre-Debut" },
   { id: "comebacks", label: "Comebacks" },
+  { id: "moments", label: "Moments" },
+  { id: "letters", label: "Letters" },
+  { id: "board", label: "Board" },
+  { id: "quiz", label: "Quiz" },
   { id: "profile", label: "Jiwoo's Room" },
 ]
 
@@ -38,6 +56,18 @@ function fieldStyle() {
     border: "1px solid #dcd6c9",
     fontFamily: "var(--font-body)",
     fontSize: "13px",
+  } as const
+}
+
+function deleteButtonStyle() {
+  return {
+    width: "fit-content",
+    border: "1px solid #d7aaa3",
+    borderRadius: "999px",
+    background: "#fff4f1",
+    color: "#9a4036",
+    padding: "8px 16px",
+    cursor: "pointer",
   } as const
 }
 
@@ -65,11 +95,19 @@ export default function AdminPanel({
   predebutPhotos,
   comebacks,
   hobbySections,
+  momentPhotos,
+  memberLetters,
+  hachuBoardMessages,
+  jiwooQuiz,
   onUpdateHomeHero,
   onUpdateHomePhotos,
   onUpdatePredebutPhotos,
   onUpdateComebacks,
   onUpdateHobbySections,
+  onUpdateMomentPhotos,
+  onUpdateMemberLetters,
+  onUpdateBoardMessages,
+  onUpdateJiwooQuiz,
   onLogout,
   onSave,
 }: AdminPanelProps) {
@@ -149,6 +187,136 @@ export default function AdminPanel({
     items[itemIndex] = { ...items[itemIndex], ...changes }
     section.items = items
     next[sectionIndex] = section
+    onUpdateHobbySections(next)
+  }
+
+  const updateMomentPhoto = (index: number, changes: Partial<MomentPhoto>) => {
+    const next = [...momentPhotos]
+    next[index] = { ...next[index], ...changes }
+    onUpdateMomentPhotos(next)
+  }
+
+  const updateLetter = (index: number, changes: Partial<MemberLetter>) => {
+    const next = [...memberLetters]
+    next[index] = { ...next[index], ...changes }
+    onUpdateMemberLetters(next)
+  }
+
+  const updateBoardMessage = (index: number, changes: Partial<BoardMessage>) => {
+    const next = [...hachuBoardMessages]
+    next[index] = { ...next[index], ...changes }
+    onUpdateBoardMessages(next)
+  }
+
+  const updateQuizQuestion = (index: number, changes: Partial<QuizQuestion>) => {
+    const next = { ...jiwooQuiz, questions: [...jiwooQuiz.questions] }
+    next.questions[index] = { ...next.questions[index], ...changes }
+    onUpdateJiwooQuiz(next)
+  }
+
+  const updateQuizQuestionOption = (questionIndex: number, optionIndex: number, changes: Partial<QuizQuestion["options"][number]>) => {
+    const next = { ...jiwooQuiz, questions: [...jiwooQuiz.questions] }
+    next.questions[questionIndex] = {
+      ...next.questions[questionIndex],
+      options: [...next.questions[questionIndex].options],
+    }
+    next.questions[questionIndex].options[optionIndex] = {
+      ...next.questions[questionIndex].options[optionIndex],
+      ...changes,
+    }
+    onUpdateJiwooQuiz(next)
+  }
+
+  const updateQuizResultRange = (index: number, changes: Partial<QuizResultRange>) => {
+    const next = { ...jiwooQuiz, resultRanges: [...jiwooQuiz.resultRanges] }
+    next.resultRanges[index] = { ...next.resultRanges[index], ...changes }
+    onUpdateJiwooQuiz(next)
+  }
+
+  const updateQuizMeme = (rangeIndex: number, memeIndex: number, changes: Partial<QuizResultRange["memePool"][number]>) => {
+    const next = { ...jiwooQuiz, resultRanges: [...jiwooQuiz.resultRanges] }
+    next.resultRanges[rangeIndex] = {
+      ...next.resultRanges[rangeIndex],
+      memePool: [...next.resultRanges[rangeIndex].memePool],
+    }
+    next.resultRanges[rangeIndex].memePool[memeIndex] = {
+      ...next.resultRanges[rangeIndex].memePool[memeIndex],
+      ...changes,
+    }
+    onUpdateJiwooQuiz(next)
+  }
+
+  const confirmDelete = (label: string) =>
+    window.confirm(`Hapus ${label}? Perubahan akan berlaku setelah disimpan.`)
+
+  const deleteHomePhoto = (index: number) => {
+    if (confirmDelete("foto home ini")) onUpdateHomePhotos(homePhotos.filter((_, itemIndex) => itemIndex !== index))
+  }
+
+  const deletePredebutPhoto = (index: number) => {
+    if (confirmDelete("foto pre-debut ini")) onUpdatePredebutPhotos(predebutPhotos.filter((_, itemIndex) => itemIndex !== index))
+  }
+
+  const deleteComeback = (index: number) => {
+    if (confirmDelete("era comeback ini")) onUpdateComebacks(comebacks.filter((_, itemIndex) => itemIndex !== index))
+  }
+
+  const deleteComebackPhoto = (eraIndex: number, photoIndex: number) => {
+    if (!confirmDelete("foto comeback ini")) return
+    const next = [...comebacks]
+    next[eraIndex] = { ...next[eraIndex], photos: next[eraIndex].photos.filter((_, itemIndex) => itemIndex !== photoIndex) }
+    onUpdateComebacks(next)
+  }
+
+  const deleteMomentPhoto = (index: number) => {
+    if (confirmDelete("foto momen ini")) onUpdateMomentPhotos(momentPhotos.filter((_, itemIndex) => itemIndex !== index))
+  }
+
+  const deleteLetter = (index: number) => {
+    if (confirmDelete("surat ini")) onUpdateMemberLetters(memberLetters.filter((_, itemIndex) => itemIndex !== index))
+  }
+
+  const deleteBoardMessage = (index: number) => {
+    if (confirmDelete("pesan board ini")) onUpdateBoardMessages(hachuBoardMessages.filter((_, itemIndex) => itemIndex !== index))
+  }
+
+  const deleteQuizQuestion = (index: number) => {
+    if (!confirmDelete("pertanyaan quiz ini")) return
+    onUpdateJiwooQuiz({ ...jiwooQuiz, questions: jiwooQuiz.questions.filter((_, itemIndex) => itemIndex !== index) })
+  }
+
+  const deleteQuizOption = (questionIndex: number, optionIndex: number) => {
+    if (!confirmDelete("opsi jawaban ini")) return
+    const next = { ...jiwooQuiz, questions: [...jiwooQuiz.questions] }
+    next.questions[questionIndex] = {
+      ...next.questions[questionIndex],
+      options: next.questions[questionIndex].options.filter((_, itemIndex) => itemIndex !== optionIndex),
+    }
+    onUpdateJiwooQuiz(next)
+  }
+
+  const deleteQuizResultRange = (index: number) => {
+    if (confirmDelete("rentang hasil quiz ini")) onUpdateJiwooQuiz({ ...jiwooQuiz, resultRanges: jiwooQuiz.resultRanges.filter((_, itemIndex) => itemIndex !== index) })
+  }
+
+  const deleteQuizMeme = (rangeIndex: number, memeIndex: number) => {
+    if (!confirmDelete("meme quiz ini")) return
+    const next = { ...jiwooQuiz, resultRanges: [...jiwooQuiz.resultRanges] }
+    next.resultRanges[rangeIndex] = {
+      ...next.resultRanges[rangeIndex],
+      memePool: next.resultRanges[rangeIndex].memePool.filter((_, itemIndex) => itemIndex !== memeIndex),
+    }
+    onUpdateJiwooQuiz(next)
+  }
+
+  const deleteHobbySection = (index: number) => {
+    if (confirmDelete("kartu room ini")) onUpdateHobbySections(hobbySections.filter((_, itemIndex) => itemIndex !== index))
+  }
+
+  const deleteHobbyItem = (sectionIndex: number, itemIndex: number) => {
+    if (!confirmDelete("item ini")) return
+    const next = [...hobbySections]
+    next[sectionIndex] = { ...next[sectionIndex], items: next[sectionIndex].items.filter((_, currentIndex) => currentIndex !== itemIndex) }
     onUpdateHobbySections(next)
   }
 
@@ -439,6 +607,9 @@ export default function AdminPanel({
                       />
                     </label>
                   </div>
+                  <button type="button" onClick={() => deleteHomePhoto(index)} style={deleteButtonStyle()}>
+                    Hapus foto home
+                  </button>
                 </div>
               ))}
 
@@ -590,6 +761,9 @@ export default function AdminPanel({
                       />
                     </label>
                   </div>
+                  <button type="button" onClick={() => deletePredebutPhoto(index)} style={deleteButtonStyle()}>
+                    Hapus foto pre-debut
+                  </button>
                 </div>
               ))}
 
@@ -638,7 +812,12 @@ export default function AdminPanel({
               }}
             >
               <div style={{ display: "grid", gap: "12px", marginBottom: "14px" }}>
-                <div style={{ fontWeight: 600 }}>Era {eraIndex + 1}</div>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
+                  <div style={{ fontWeight: 600 }}>Era {eraIndex + 1}</div>
+                  <button type="button" onClick={() => deleteComeback(eraIndex)} style={deleteButtonStyle()}>
+                    Hapus era
+                  </button>
+                </div>
                 <div
                   style={{
                     display: "grid",
@@ -721,6 +900,9 @@ export default function AdminPanel({
                       }}
                     >
                       <label style={{ display: "grid", gap: "8px" }}>
+                    <button type="button" onClick={() => deleteComebackPhoto(eraIndex, photoIndex)} style={deleteButtonStyle()}>
+                      Hapus foto comeback
+                    </button>
                         Image URL
                         <input
                           style={fieldStyle()}
@@ -892,6 +1074,246 @@ export default function AdminPanel({
         </div>
       )}
 
+      {activeTab === "moments" && (
+        <div style={{ marginTop: "22px", display: "grid", gap: "18px" }}>
+          {sectionBox(
+            <>
+              <div style={{ fontWeight: 600 }}>Jiwoo & member moment photos</div>
+              {momentPhotos.map((photo, index) => (
+                <div key={photo.id || index} style={{ border: "1px solid #e6dcc9", borderRadius: "16px", padding: "16px", display: "grid", gap: "12px" }}>
+                  <div style={{ display: "grid", gap: "12px", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
+                    <label style={{ display: "grid", gap: "8px" }}>
+                      Image URL
+                      <input style={fieldStyle()} value={photo.src} onChange={(event) => updateMomentPhoto(index, { src: event.target.value })} />
+                    </label>
+                    <label style={{ display: "grid", gap: "8px" }}>
+                      Alt text
+                      <input style={fieldStyle()} value={photo.alt} onChange={(event) => updateMomentPhoto(index, { alt: event.target.value })} />
+                    </label>
+                    <label style={{ display: "grid", gap: "8px" }}>
+                      Year
+                      <input style={fieldStyle()} value={photo.year} onChange={(event) => updateMomentPhoto(index, { year: event.target.value })} />
+                    </label>
+                    <label style={{ display: "grid", gap: "8px" }}>
+                      Member / group
+                      <input style={fieldStyle()} value={photo.member} onChange={(event) => updateMomentPhoto(index, { member: event.target.value })} />
+                    </label>
+                  </div>
+                  <label style={{ display: "grid", gap: "8px" }}>
+                    Caption
+                    <input style={fieldStyle()} value={photo.caption} onChange={(event) => updateMomentPhoto(index, { caption: event.target.value })} />
+                  </label>
+                  <label style={{ display: "grid", gap: "8px" }}>
+                    Note
+                    <textarea rows={3} style={{ ...fieldStyle(), resize: "vertical" }} value={photo.note} onChange={(event) => updateMomentPhoto(index, { note: event.target.value })} />
+                  </label>
+                  <button type="button" onClick={() => deleteMomentPhoto(index)} style={deleteButtonStyle()}>
+                    Hapus foto momen
+                  </button>
+                </div>
+              ))}
+
+              <button type="button" onClick={() => onUpdateMomentPhotos([...momentPhotos, { id: `moment-${Date.now()}`, src: "", alt: "", year: "2026", caption: "New moment", note: "", member: "Heart2Heart" }])} style={{ width: "fit-content", border: "1px solid #c4d4bc", borderRadius: "999px", background: "#eef4ea", padding: "8px 16px", cursor: "pointer" }}>
+                Add moment photo
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+      {activeTab === "letters" && (
+        <div style={{ marginTop: "22px", display: "grid", gap: "18px" }}>
+          {sectionBox(
+            <>
+              <div style={{ fontWeight: 600 }}>Letter from members to Jiwoo (per year)</div>
+              {memberLetters.map((letter, index) => (
+                <div key={letter.id || index} style={{ border: "1px solid #e6dcc9", borderRadius: "16px", padding: "16px", display: "grid", gap: "12px" }}>
+                  <div style={{ display: "grid", gap: "12px", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
+                    <label style={{ display: "grid", gap: "8px" }}>
+                      Year
+                      <input style={fieldStyle()} value={letter.year} onChange={(event) => updateLetter(index, { year: event.target.value })} />
+                    </label>
+                    <label style={{ display: "grid", gap: "8px" }}>
+                      Writer
+                      <input style={fieldStyle()} value={letter.from} onChange={(event) => updateLetter(index, { from: event.target.value })} />
+                    </label>
+                    <label style={{ display: "grid", gap: "8px" }}>
+                      To
+                      <input style={fieldStyle()} value={letter.to} onChange={(event) => updateLetter(index, { to: event.target.value })} />
+                    </label>
+                  </div>
+                  <label style={{ display: "grid", gap: "8px" }}>
+                    Title
+                    <input style={fieldStyle()} value={letter.title} onChange={(event) => updateLetter(index, { title: event.target.value })} />
+                  </label>
+                  <label style={{ display: "grid", gap: "8px" }}>
+                    Message
+                    <textarea rows={4} style={{ ...fieldStyle(), resize: "vertical" }} value={letter.message} onChange={(event) => updateLetter(index, { message: event.target.value })} />
+                  </label>
+                  <button type="button" onClick={() => deleteLetter(index)} style={deleteButtonStyle()}>
+                    Hapus surat
+                  </button>
+                </div>
+              ))}
+
+              <button type="button" onClick={() => onUpdateMemberLetters([...memberLetters, { id: `letter-${Date.now()}`, year: "2026", title: "New letter", from: "Member", to: "Jiwoo", message: "" }])} style={{ width: "fit-content", border: "1px solid #c4d4bc", borderRadius: "999px", background: "#eef4ea", padding: "8px 16px", cursor: "pointer" }}>
+                Add member letter
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+      {activeTab === "board" && (
+        <div style={{ marginTop: "22px", display: "grid", gap: "18px" }}>
+          {sectionBox(
+            <>
+              <div style={{ fontWeight: 600 }}>Hachu's Board messages</div>
+              {hachuBoardMessages.map((message, index) => (
+                <div key={message.id || index} style={{ border: "1px solid #e6dcc9", borderRadius: "16px", padding: "16px", display: "grid", gap: "12px" }}>
+                  <div style={{ display: "grid", gap: "12px", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
+                    <label style={{ display: "grid", gap: "8px" }}>
+                      Author
+                      <input style={fieldStyle()} value={message.author} onChange={(event) => updateBoardMessage(index, { author: event.target.value })} />
+                    </label>
+                    <label style={{ display: "grid", gap: "8px" }}>
+                      Date
+                      <input style={fieldStyle()} value={message.createdAt} onChange={(event) => updateBoardMessage(index, { createdAt: event.target.value })} />
+                    </label>
+                  </div>
+                  <label style={{ display: "grid", gap: "8px" }}>
+                    Message
+                    <textarea rows={4} style={{ ...fieldStyle(), resize: "vertical" }} value={message.message} onChange={(event) => updateBoardMessage(index, { message: event.target.value })} />
+                  </label>
+                  <button type="button" onClick={() => deleteBoardMessage(index)} style={deleteButtonStyle()}>
+                    Hapus pesan
+                  </button>
+                </div>
+              ))}
+
+              <button type="button" onClick={() => onUpdateBoardMessages([...hachuBoardMessages, { id: `board-${Date.now()}`, author: "Guest", message: "", createdAt: new Date().toISOString().slice(0, 10) }])} style={{ width: "fit-content", border: "1px solid #c4d4bc", borderRadius: "999px", background: "#eef4ea", padding: "8px 16px", cursor: "pointer" }}>
+                Add board message
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+      {activeTab === "quiz" && (
+        <div style={{ marginTop: "22px", display: "grid", gap: "18px" }}>
+          {sectionBox(
+            <>
+              <div style={{ fontWeight: 600 }}>Quiz title and description</div>
+              <label style={{ display: "grid", gap: "8px" }}>
+                Title
+                <input style={fieldStyle()} value={jiwooQuiz.title} onChange={(event) => onUpdateJiwooQuiz({ ...jiwooQuiz, title: event.target.value })} />
+              </label>
+              <label style={{ display: "grid", gap: "8px" }}>
+                Description
+                <textarea rows={3} style={{ ...fieldStyle(), resize: "vertical" }} value={jiwooQuiz.description} onChange={(event) => onUpdateJiwooQuiz({ ...jiwooQuiz, description: event.target.value })} />
+              </label>
+            </>
+          )}
+
+          {jiwooQuiz.questions.map((question, questionIndex) => (
+            <div key={question.id} style={{ border: "1px solid #e6dcc9", borderRadius: "16px", padding: "16px", display: "grid", gap: "12px" }}>
+              <div style={{ display: "grid", gap: "12px", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
+                <label style={{ display: "grid", gap: "8px" }}>
+                  Question prompt
+                  <input style={fieldStyle()} value={question.prompt} onChange={(event) => updateQuizQuestion(questionIndex, { prompt: event.target.value })} />
+                </label>
+              </div>
+              {question.options.map((option, optionIndex) => (
+                <div key={option.id} style={{ display: "grid", gap: "8px", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
+                  <label style={{ display: "grid", gap: "8px" }}>
+                    Option label
+                    <input style={fieldStyle()} value={option.label} onChange={(event) => updateQuizQuestionOption(questionIndex, optionIndex, { label: event.target.value })} />
+                  </label>
+                  <label style={{ display: "flex", alignItems: "center", gap: "8px", border: "1px solid #e6dcc9", borderRadius: "10px", padding: "10px 12px", minHeight: "44px" }}>
+                    <input type="checkbox" checked={option.isCorrect} onChange={(event) => updateQuizQuestionOption(questionIndex, optionIndex, { isCorrect: event.target.checked })} />
+                    Correct answer
+                  </label>
+                  <button type="button" onClick={() => deleteQuizOption(questionIndex, optionIndex)} style={deleteButtonStyle()}>
+                    Hapus opsi
+                  </button>
+                </div>
+              ))}
+              <button type="button" onClick={() => deleteQuizQuestion(questionIndex)} style={deleteButtonStyle()}>
+                Hapus pertanyaan
+              </button>
+            </div>
+          ))}
+
+          <button
+            type="button"
+            onClick={() => onUpdateJiwooQuiz({
+              ...jiwooQuiz,
+              questions: [
+                ...jiwooQuiz.questions,
+                {
+                  id: `q-${Date.now()}`,
+                  prompt: "New question",
+                  options: [
+                    { id: `q-${Date.now()}-a`, label: "Option A", isCorrect: true },
+                    { id: `q-${Date.now()}-b`, label: "Option B", isCorrect: false },
+                    { id: `q-${Date.now()}-c`, label: "Option C", isCorrect: false },
+                    { id: `q-${Date.now()}-d`, label: "Option D", isCorrect: false },
+                  ],
+                },
+              ],
+            })}
+            style={{ width: "fit-content", border: "1px solid #c4d4bc", borderRadius: "999px", background: "#eef4ea", padding: "8px 16px", cursor: "pointer" }}
+          >
+            Add question
+          </button>
+
+          {jiwooQuiz.resultRanges.map((range, rangeIndex) => (
+            <div key={range.id} style={{ border: "1px solid #e6dcc9", borderRadius: "16px", padding: "16px", display: "grid", gap: "12px" }}>
+              <div style={{ display: "grid", gap: "12px", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
+                <label style={{ display: "grid", gap: "8px" }}>
+                  Min
+                  <input style={fieldStyle()} type="number" value={range.min} onChange={(event) => updateQuizResultRange(rangeIndex, { min: Number(event.target.value) || 0 })} />
+                </label>
+                <label style={{ display: "grid", gap: "8px" }}>
+                  Max
+                  <input style={fieldStyle()} type="number" value={range.max} onChange={(event) => updateQuizResultRange(rangeIndex, { max: Number(event.target.value) || 0 })} />
+                </label>
+              </div>
+              <label style={{ display: "grid", gap: "8px" }}>
+                Title
+                <input style={fieldStyle()} value={range.title} onChange={(event) => updateQuizResultRange(rangeIndex, { title: event.target.value })} />
+              </label>
+              <label style={{ display: "grid", gap: "8px" }}>
+                Message
+                <textarea rows={3} style={{ ...fieldStyle(), resize: "vertical" }} value={range.message} onChange={(event) => updateQuizResultRange(rangeIndex, { message: event.target.value })} />
+              </label>
+              <label style={{ display: "grid", gap: "8px" }}>
+                Certificate image URL
+                <input style={fieldStyle()} value={range.certificateImage} onChange={(event) => updateQuizResultRange(rangeIndex, { certificateImage: event.target.value })} />
+              </label>
+              {range.memePool.map((meme, memeIndex) => (
+                <div key={meme.id} style={{ display: "grid", gap: "12px", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
+                  <label style={{ display: "grid", gap: "8px" }}>
+                    Meme image URL
+                    <input style={fieldStyle()} value={meme.src} onChange={(event) => updateQuizMeme(rangeIndex, memeIndex, { src: event.target.value })} />
+                  </label>
+                  <label style={{ display: "grid", gap: "8px" }}>
+                    Meme alt text
+                    <input style={fieldStyle()} value={meme.alt} onChange={(event) => updateQuizMeme(rangeIndex, memeIndex, { alt: event.target.value })} />
+                  </label>
+                  <button type="button" onClick={() => deleteQuizMeme(rangeIndex, memeIndex)} style={deleteButtonStyle()}>
+                    Hapus meme
+                  </button>
+                </div>
+              ))}
+              <button type="button" onClick={() => deleteQuizResultRange(rangeIndex)} style={deleteButtonStyle()}>
+                Hapus rentang hasil
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       {activeTab === "profile" && (
         <div style={{ marginTop: "22px", display: "grid", gap: "18px" }}>
           {hobbySections.map((section, sectionIndex) => (
@@ -988,6 +1410,9 @@ export default function AdminPanel({
                         }
                       />
                     </label>
+                    <button type="button" onClick={() => deleteHobbyItem(sectionIndex, itemIndex)} style={deleteButtonStyle()}>
+                      Hapus item
+                    </button>
                   </div>
                 ))}
                 <button
@@ -1012,6 +1437,9 @@ export default function AdminPanel({
                   Add item
                 </button>
               </div>
+              <button type="button" onClick={() => deleteHobbySection(sectionIndex)} style={deleteButtonStyle()}>
+                Hapus kartu room
+              </button>
             </div>
           ))}
 

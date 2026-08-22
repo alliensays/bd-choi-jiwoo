@@ -9,6 +9,10 @@ import {
   predebutPhotos as initialPredebutPhotos,
   comebacks as initialComebacks,
   hobbySections as initialHobbySections,
+  momentPhotos as initialMomentPhotos,
+  memberLetters as initialMemberLetters,
+  hachuBoardMessages as initialBoardMessages,
+  jiwooQuiz as initialJiwooQuiz,
 } from "./data"
 
 /* ─── Scroll-fade helper ─────────────────────────────────────────────────── */
@@ -95,6 +99,22 @@ function Divider({
   )
 }
 
+function migrateQuizMemePool(quiz: typeof initialJiwooQuiz) {
+  return {
+    ...quiz,
+    resultRanges: quiz.resultRanges.map((range, index) => {
+      const hasLegacyMeme = range.memePool.some((meme) =>
+        /^\/quiz\/meme-\d+-\d+(?:-alt)?\.svg$/.test(meme.src),
+      )
+      const latestRange = initialJiwooQuiz.resultRanges[index]
+
+      return hasLegacyMeme && latestRange
+        ? { ...range, memePool: latestRange.memePool }
+        : range
+    }),
+  }
+}
+
 /* ══════════════════════════════════════════════════════════════════════════ */
 export default function App() {
   const [activeEra, setActiveEra] = useState(initialComebacks[0].id)
@@ -103,9 +123,20 @@ export default function App() {
   const [predebutPhotos, setPredebutPhotos] = useState(initialPredebutPhotos)
   const [comebacks, setComebacks] = useState(initialComebacks)
   const [hobbySections, setHobbySections] = useState(initialHobbySections)
+  const [momentPhotos, setMomentPhotos] = useState(initialMomentPhotos)
+  const [memberLetters, setMemberLetters] = useState(initialMemberLetters)
+  const [hachuBoardMessages, setHachuBoardMessages] = useState(initialBoardMessages)
+  const [jiwooQuiz, setJiwooQuiz] = useState(initialJiwooQuiz)
+  const [selectedLetterYear, setSelectedLetterYear] = useState(initialMemberLetters[0]?.year ?? "")
+  const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({})
+  const [quizSubmitted, setQuizSubmitted] = useState(false)
+  const [quizScore, setQuizScore] = useState<number | null>(null)
+  const [quizResult, setQuizResult] = useState<typeof initialJiwooQuiz.resultRanges[number] | null>(null)
+  const [quizMeme, setQuizMeme] = useState<{ src: string; alt: string } | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
   const [showLoginPage, setShowLoginPage] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [showQuizPage, setShowQuizPage] = useState(false)
   const [audioBlocked, setAudioBlocked] = useState(false)
   const [audioPlaying, setAudioPlaying] = useState(false)
   const audioCtxRef = useRef<AudioContext | null>(null)
@@ -154,6 +185,10 @@ export default function App() {
           if (data.predebutPhotos) setPredebutPhotos(data.predebutPhotos)
           if (data.comebacks) setComebacks(data.comebacks)
           if (data.hobbySections) setHobbySections(data.hobbySections)
+          if (data.momentPhotos) setMomentPhotos(data.momentPhotos)
+          if (data.memberLetters) setMemberLetters(data.memberLetters)
+          if (data.hachuBoardMessages) setHachuBoardMessages(data.hachuBoardMessages)
+          if (data.jiwooQuiz) setJiwooQuiz(migrateQuizMemePool(data.jiwooQuiz))
           return
         }
       } catch (err) {
@@ -166,12 +201,20 @@ export default function App() {
         const sPredebut = localStorage.getItem('predebutPhotos')
         const sComebacks = localStorage.getItem('comebacks')
         const sHobby = localStorage.getItem('hobbySections')
+        const sMomentPhotos = localStorage.getItem('momentPhotos')
+        const sMemberLetters = localStorage.getItem('memberLetters')
+        const sBoardMessages = localStorage.getItem('hachuBoardMessages')
+        const sJiwooQuiz = localStorage.getItem('jiwooQuiz')
 
         if (sHomeHero) setHomeHero(JSON.parse(sHomeHero))
         if (sHomePhotos) setHomePhotos(JSON.parse(sHomePhotos))
         if (sPredebut) setPredebutPhotos(JSON.parse(sPredebut))
         if (sComebacks) setComebacks(JSON.parse(sComebacks))
         if (sHobby) setHobbySections(JSON.parse(sHobby))
+        if (sMomentPhotos) setMomentPhotos(JSON.parse(sMomentPhotos))
+        if (sMemberLetters) setMemberLetters(JSON.parse(sMemberLetters))
+        if (sBoardMessages) setHachuBoardMessages(JSON.parse(sBoardMessages))
+        if (sJiwooQuiz) setJiwooQuiz(migrateQuizMemePool(JSON.parse(sJiwooQuiz)))
       } catch (err) {
         // ignore parse errors
       }
@@ -185,6 +228,13 @@ export default function App() {
     }
   }, [])
 
+  useEffect(() => {
+    if (!memberLetters.length) return
+    if (!memberLetters.some((letter) => letter.year === selectedLetterYear)) {
+      setSelectedLetterYear(memberLetters[0].year)
+    }
+  }, [memberLetters, selectedLetterYear])
+
   // touch / click handler: spawn particle + short chime
   useEffect(() => {
     const onPointer = (ev: PointerEvent) => {
@@ -193,19 +243,20 @@ export default function App() {
       const x = ev.clientX
       const y = ev.clientY
       const emojis = ['🎉', '🎂', '✨', '🥳', '💫', '💖']
-      const parts: Array<{id:number; x:number; y:number; emoji:string; dx:number; size:number}> = []
-      for (let i = 0; i < 3; i++) {
-        const id = particleIdRef.current++
-        const emoji = emojis[Math.floor(Math.random() * emojis.length)]
-        const dx = (i - 1) * (20 + Math.random() * 36) // left, center, right spread
-        const size = 16 + Math.floor(Math.random() * 12)
-        parts.push({ id, x, y, emoji, dx, size })
+      const emoji = emojis[Math.floor(Math.random() * emojis.length)]
+      const part = {
+        id: particleIdRef.current++,
+        x,
+        y,
+        emoji,
+        dx: 0,
+        size: 20 + Math.floor(Math.random() * 12),
       }
-      setParticles((p) => [...p, ...parts])
+      setParticles((p) => [...p, part])
 
       // remove after animation
       window.setTimeout(() => {
-        setParticles((p) => p.filter((it) => !parts.some((pt) => pt.id === it.id)))
+        setParticles((p) => p.filter((it) => it.id !== part.id))
       }, 1600)
 
       // play short chime via WebAudio
@@ -399,27 +450,22 @@ export default function App() {
   }
 
   async function enableAudioAndPlay() {
-    // Try to play an audio file from /audio/happy-birthday.mp3 first
+    const audioUrl = '/audio/happy-birthday.mp3'
+
+    // Prefer the real public file whenever possible, instead of relying on HEAD checks
+    // which can fail behind proxies/CDNs or stricter hosting setups.
     try {
-      const res = await fetch('/audio/happy-birthday.mp3', { method: 'HEAD' })
-      if (res.ok) {
-        // play via HTMLAudioElement (easier for files)
-        try {
-          stopAudio()
-          const a = new Audio('/audio/happy-birthday.mp3')
-          a.volume = 0.45
-          audioElRef.current = a
-          await a.play()
-          setAudioPlaying(true)
-          setAudioBlocked(false)
-          a.onended = () => { setAudioPlaying(false); audioElRef.current = null }
-          return
-        } catch (err) {
-          // fall through to WebAudio fallback
-        }
-      }
+      stopAudio()
+      const a = new Audio(audioUrl)
+      a.volume = 0.45
+      audioElRef.current = a
+      await a.play()
+      setAudioPlaying(true)
+      setAudioBlocked(false)
+      a.onended = () => { setAudioPlaying(false); audioElRef.current = null }
+      return
     } catch (err) {
-      // HEAD failed or file missing — fallback to WebAudio
+      // Fall through to WebAudio if the asset is missing or browser blocks autoplay.
     }
 
     // Fallback: create/resume AudioContext and synthesize Happy Birthday
@@ -434,7 +480,7 @@ export default function App() {
   }
 
   const saveAll = () => {
-    const payload = { homeHero, homePhotos, predebutPhotos, comebacks, hobbySections }
+    const payload = { homeHero, homePhotos, predebutPhotos, comebacks, hobbySections, momentPhotos, memberLetters, hachuBoardMessages, jiwooQuiz }
     ;(async () => {
       try {
         const res = await fetch('/api/data', {
@@ -449,6 +495,10 @@ export default function App() {
           localStorage.setItem('predebutPhotos', JSON.stringify(predebutPhotos))
           localStorage.setItem('comebacks', JSON.stringify(comebacks))
           localStorage.setItem('hobbySections', JSON.stringify(hobbySections))
+          localStorage.setItem('momentPhotos', JSON.stringify(momentPhotos))
+          localStorage.setItem('memberLetters', JSON.stringify(memberLetters))
+          localStorage.setItem('hachuBoardMessages', JSON.stringify(hachuBoardMessages))
+          localStorage.setItem('jiwooQuiz', JSON.stringify(jiwooQuiz))
           alert('Perubahan disimpan ke server')
           return
         }
@@ -462,6 +512,10 @@ export default function App() {
         localStorage.setItem('predebutPhotos', JSON.stringify(predebutPhotos))
         localStorage.setItem('comebacks', JSON.stringify(comebacks))
         localStorage.setItem('hobbySections', JSON.stringify(hobbySections))
+        localStorage.setItem('momentPhotos', JSON.stringify(momentPhotos))
+        localStorage.setItem('memberLetters', JSON.stringify(memberLetters))
+        localStorage.setItem('hachuBoardMessages', JSON.stringify(hachuBoardMessages))
+        localStorage.setItem('jiwooQuiz', JSON.stringify(jiwooQuiz))
         alert('Server tidak tersedia — disimpan ke localStorage sebagai fallback')
       } catch (err) {
         alert('Gagal menyimpan: ' + String(err))
@@ -470,11 +524,14 @@ export default function App() {
   }
 
   const currentEra = comebacks.find((c) => c.id === activeEra) ?? comebacks[0]
+  const letterYears = Array.from(new Set(memberLetters.map((letter) => letter.year))).filter(Boolean)
+  const visibleLetters = memberLetters.filter((letter) => letter.year === selectedLetterYear)
+  const allQuizAnswered = jiwooQuiz.questions.every((question) => Boolean(quizAnswers[question.id]))
 
   /* Nav active section detection */
   const [activeNav, setActiveNav] = useState("home")
   useEffect(() => {
-    const sections = ["home", "predebut", "comebacks", "profile"]
+    const sections = ["home", "predebut", "comebacks", "moments", "letters", "board", "profile"]
     const handlers = sections.map((id) => {
       const el = document.getElementById(id)
       if (!el) return null
@@ -494,13 +551,45 @@ export default function App() {
     { id: "home", label: "Home" },
     { id: "predebut", label: "Pre-Debut" },
     { id: "comebacks", label: "Comebacks" },
+    { id: "moments", label: "Moments" },
+    { id: "letters", label: "Letters" },
+    { id: "board", label: "Board" },
     { id: "profile", label: "Jiwoo's Room" },
   ]
 
   const scrollTo = (id: string) =>
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" })
 
-  
+  const submitQuiz = () => {
+    const total = jiwooQuiz.questions.length
+    if (!total || !jiwooQuiz.resultRanges.length) return
+
+    const score = jiwooQuiz.questions.reduce((sum, question) => {
+      const selectedId = quizAnswers[question.id]
+      const correct = question.options.find((option) => option.isCorrect)?.id
+      return sum + (selectedId === correct ? 1 : 0)
+    }, 0)
+
+    const percent = Math.round((score / total) * 100)
+    const sortedRanges = [...jiwooQuiz.resultRanges].sort((left, right) => left.min - right.min)
+    const result =
+      sortedRanges.find((range) => percent >= range.min && percent <= range.max) ??
+      (percent < sortedRanges[0].min ? sortedRanges[0] : sortedRanges[sortedRanges.length - 1])
+    const meme = result.memePool[Math.floor(Math.random() * result.memePool.length)] ?? null
+
+    setQuizScore(percent)
+    setQuizResult(result)
+    setQuizMeme(meme)
+    setQuizSubmitted(true)
+  }
+
+  const resetQuiz = () => {
+    setQuizAnswers({})
+    setQuizSubmitted(false)
+    setQuizScore(null)
+    setQuizResult(null)
+    setQuizMeme(null)
+  }
 
   return (
     <div
@@ -516,11 +605,19 @@ export default function App() {
           predebutPhotos={predebutPhotos}
           comebacks={comebacks}
           hobbySections={hobbySections}
+          momentPhotos={momentPhotos}
+          memberLetters={memberLetters}
+          hachuBoardMessages={hachuBoardMessages}
+          jiwooQuiz={jiwooQuiz}
           onUpdateHomeHero={setHomeHero}
           onUpdateHomePhotos={setHomePhotos}
           onUpdatePredebutPhotos={setPredebutPhotos}
           onUpdateComebacks={setComebacks}
           onUpdateHobbySections={setHobbySections}
+          onUpdateMomentPhotos={setMomentPhotos}
+          onUpdateMemberLetters={setMemberLetters}
+          onUpdateBoardMessages={setHachuBoardMessages}
+          onUpdateJiwooQuiz={setJiwooQuiz}
           onLogout={() => setIsAdmin(false)}
           onSave={() => saveAll()}
         />
@@ -821,26 +918,28 @@ export default function App() {
             position: "absolute",
             inset: 0,
             backgroundImage:
-              "radial-gradient(circle at 60% 30%, rgba(196,212,188,0.18) 0%, transparent 55%), radial-gradient(circle at 20% 70%, rgba(200,190,230,0.12) 0%, transparent 50%)",
+              "repeating-linear-gradient(135deg, rgba(196,212,188,0.12) 0 18px, transparent 18px 54px), repeating-linear-gradient(45deg, rgba(200,190,230,0.08) 0 12px, transparent 12px 46px), linear-gradient(135deg, #faf9f6 0%, #f4f0e9 100%)",
+            backgroundSize: "auto, auto, 100% 100%",
             pointerEvents: "none",
           }}
         />
 
         {/* Scattered background photos — desktop only */}
-        {homePhotos.map((p, i) => (
+{homePhotos.map((p, i) => (
           <div
               key={i}
               aria-hidden
               style={{
                 position: "absolute",
-                ...{
-                  top: p.style.top,
-                  left: p.style.left,
-                  right: p.style.right,
-                  bottom: p.style.bottom,
-                },
+                // Menggunakan calc() untuk mendorong posisi lebih ke tengah.
+                // Sesuaikan '10%' atau '50px' dengan kebutuhan Anda.
+                top: p.style.top ? `calc(${p.style.top} + 10%)` : undefined,
+                bottom: p.style.bottom ? `calc(${p.style.bottom} + 10%)` : undefined,
+                left: p.style.left ? `calc(${p.style.left} + 10%)` : undefined,
+                right: p.style.right ? `calc(${p.style.right} + 10%)` : undefined,
                 width: p.style.width,
-                transform: `rotate(${p.style.rotate})`,
+                transform: `rotate(${p.style.rotate}) scale(1.24)`,
+                transformOrigin: "center",
                 overflow: "hidden",
                 boxShadow: "0 6px 24px rgba(0,0,0,0.10)",
                 border: "3px solid rgba(250,249,246,0.9)",
@@ -859,7 +958,6 @@ export default function App() {
             />
           </div>
         ))}
-
         {/* Main content */}
         <div
           style={{
@@ -1026,39 +1124,64 @@ export default function App() {
           </div>
 
           {/* Scroll cue */}
-          <button
-            onClick={() => scrollTo("predebut")}
-            style={{
-              marginTop: "44px",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: "8px",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              color: "rgba(30,26,22,0.3)",
-            }}
-          >
-            <span
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "18px", marginTop: "36px" }}>
+            <button
+              type="button"
+              onClick={() => {
+                setShowQuizPage(true)
+                setTimeout(() => {
+                  document.getElementById("quiz-page")?.scrollIntoView({ behavior: "smooth", block: "start" })
+                }, 50)
+              }}
               style={{
+                padding: "12px 22px",
+                borderRadius: "999px",
+                border: "1px solid #c4d4bc",
+                background: "#eef4ea",
+                color: "#3a5030",
+                cursor: "pointer",
                 fontFamily: "var(--font-mono)",
-                fontSize: "9px",
-                letterSpacing: "0.4em",
+                fontSize: "10px",
+                letterSpacing: "0.18em",
                 textTransform: "uppercase",
               }}
             >
-              {homeHero.scrollLabel}
-            </span>
-            <div
+              Take Jiwoo Quiz
+            </button>
+
+            <button
+              onClick={() => scrollTo("predebut")}
               style={{
-                width: "1px",
-                height: "40px",
-                background:
-                  "linear-gradient(to bottom, rgba(30,26,22,0.2), transparent)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "8px",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "rgba(30,26,22,0.3)",
               }}
-            />
-          </button>
+            >
+              <span
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "9px",
+                  letterSpacing: "0.4em",
+                  textTransform: "uppercase",
+                }}
+              >
+                {homeHero.scrollLabel}
+              </span>
+              <div
+                style={{
+                  width: "1px",
+                  height: "40px",
+                  background:
+                    "linear-gradient(to bottom, rgba(30,26,22,0.2), transparent)",
+                }}
+              />
+            </button>
+          </div>
         </div>
       </section>
 
@@ -1257,9 +1380,400 @@ export default function App() {
       </section>
 
       {/* ═══════════════════════════════════════
-          SECTION 4 · PROFILE ROOM
+          SECTION 4 · MOMENTS
       ═══════════════════════════════════════ */}
-<ProfileSection sections={hobbySections} />
+      <section
+        id="moments"
+        style={{
+          background: "#f5f0ea",
+          borderTop: "1px solid #ece6de",
+          paddingTop: "80px",
+          paddingBottom: "72px",
+        }}
+      >
+        <div style={{ maxWidth: "1200px", margin: "0 auto", paddingLeft: "32px", paddingRight: "32px" }}>
+          <FadeIn style={{ textAlign: "center", marginBottom: "48px" }}>
+            <Label color="#8a9078">Photo Moments · Jiwoo & Members</Label>
+            <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.8rem, 6vw, 4.5rem)", fontWeight: 300, color: "#1e1a16", lineHeight: 1.1, margin: "12px 0 0" }}>
+              A few <em style={{ color: "#7a7a5b", fontStyle: "italic" }}>warm memories</em>
+            </h2>
+            <Divider color="rgba(30,26,22,0.08)" />
+          </FadeIn>
+
+          <div
+            style={{
+              display: "flex",
+              gap: "22px",
+              overflowX: "auto",
+              paddingBottom: "12px",
+              scrollbarWidth: "thin",
+              scrollSnapType: "x proximity",
+            }}
+          >
+            {momentPhotos.map((photo) => (
+              <div
+                key={photo.id}
+                style={{
+                  background: "#fff",
+                  border: "1px solid #ece6de",
+                  borderRadius: "22px",
+                  overflow: "hidden",
+                  boxShadow: "0 10px 30px rgba(0,0,0,0.04)",
+                  minWidth: "min(78vw, 360px)",
+                  maxWidth: "360px",
+                  scrollSnapAlign: "start",
+                  flexShrink: 0,
+                }}
+              >
+                <img src={photo.src} alt={photo.alt} style={{ width: "100%", height: "360px", objectFit: "cover", display: "block" }} />
+                <div style={{ padding: "18px 18px 22px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.2em", color: "rgba(30,26,22,0.48)", textTransform: "uppercase" }}>{photo.year}</span>
+                    <span style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "rgba(30,26,22,0.5)", fontStyle: "italic" }}>{photo.member}</span>
+                  </div>
+                  <div style={{ fontFamily: "var(--font-display)", fontSize: "1.35rem", color: "#1e1a16", marginBottom: "8px" }}>{photo.caption}</div>
+                  <p style={{ margin: 0, fontFamily: "var(--font-body)", fontSize: "14px", lineHeight: 1.7, color: "rgba(30,26,22,0.6)" }}>{photo.note}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════
+          SECTION 5 · LETTERS
+      ═══════════════════════════════════════ */}
+      <section
+        id="letters"
+        style={{
+          background: "#faf9f6",
+          borderTop: "1px solid #ece6de",
+          paddingTop: "80px",
+          paddingBottom: "72px",
+        }}
+      >
+        <div style={{ maxWidth: "1100px", margin: "0 auto", paddingLeft: "32px", paddingRight: "32px" }}>
+          <FadeIn style={{ textAlign: "center", marginBottom: "48px" }}>
+            <Label color="#8a9078">Letters from Members · Member Letters</Label>
+            <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.8rem, 6vw, 4.5rem)", fontWeight: 300, color: "#1e1a16", lineHeight: 1.1, margin: "12px 0 0" }}>
+              Notes to <em style={{ color: "#7d5d52", fontStyle: "italic" }}>Jiwoo</em>
+            </h2>
+            <Divider color="rgba(30,26,22,0.08)" />
+          </FadeIn>
+
+          <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: "10px", marginBottom: "36px" }}>
+            {letterYears.map((year) => {
+              const active = selectedLetterYear === year
+              return (
+                <button
+                  key={year}
+                  type="button"
+                  onClick={() => setSelectedLetterYear(year)}
+                  style={{
+                    padding: "10px 22px",
+                    borderRadius: "100px",
+                    fontFamily: "var(--font-display)",
+                    fontSize: "15px",
+                    fontWeight: 300,
+                    cursor: "pointer",
+                    transition: "all 0.3s ease",
+                    border: active ? "1px solid #b8c8b0" : "1px solid #ece6de",
+                    background: active ? "#eef4ea" : "transparent",
+                    color: active ? "#3a5030" : "rgba(30,26,22,0.48)",
+                  }}
+                >
+                  {year}
+                </button>
+              )
+            })}
+          </div>
+
+          <div style={{ display: "grid", gap: "20px" }}>
+            {visibleLetters.map((letter) => (
+              <div key={letter.id} style={{ background: "#fff", border: "1px solid #ece6de", borderRadius: "20px", padding: "22px 22px 18px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", marginBottom: "10px", flexWrap: "wrap" }}>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.2em", color: "rgba(30,26,22,0.48)", textTransform: "uppercase" }}>{letter.year}</span>
+                  <span style={{ fontFamily: "var(--font-body)", fontSize: "12px", fontStyle: "italic", color: "rgba(30,26,22,0.55)" }}>{letter.from} to {letter.to}</span>
+                </div>
+                <div style={{ fontFamily: "var(--font-display)", fontSize: "1.6rem", marginBottom: "10px", color: "#1e1a16" }}>{letter.title}</div>
+                <p style={{ margin: 0, fontFamily: "var(--font-body)", fontSize: "14px", lineHeight: 1.8, color: "rgba(30,26,22,0.64)" }}>{letter.message}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════
+          SECTION 6 · HACHU'S BOARD
+      ═══════════════════════════════════════ */}
+      <section
+        id="board"
+        style={{
+          background: "#f5f0ea",
+          borderTop: "1px solid #ece6de",
+          paddingTop: "80px",
+          paddingBottom: "72px",
+        }}
+      >
+        <div style={{ maxWidth: "1200px", margin: "0 auto", paddingLeft: "32px", paddingRight: "32px" }}>
+          <FadeIn style={{ textAlign: "center", marginBottom: "48px" }}>
+            <Label color="#8a9078">Hachu's Board · Visitor Messages</Label>
+            <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.8rem, 6vw, 4.5rem)", fontWeight: 300, color: "#1e1a16", lineHeight: 1.1, margin: "12px 0 0" }}>
+              Leave a <em style={{ color: "#6a7e6d", fontStyle: "italic" }}>message</em>
+            </h2>
+            <Divider color="rgba(30,26,22,0.08)" />
+          </FadeIn>
+
+          <div
+            style={{
+              display: "flex",
+              gap: "18px",
+              overflowX: "auto",
+              paddingBottom: "12px",
+              marginBottom: "32px",
+              scrollbarWidth: "thin",
+              scrollSnapType: "x proximity",
+            }}
+          >
+            {hachuBoardMessages.map((item, index) => (
+              <div
+                key={item.id}
+                style={{
+                  position: "relative",
+                  background: index % 2 === 0 ? "#fffaf1" : "#fff",
+                  border: "1px solid rgba(156,135,98,0.25)",
+                  borderRadius: "18px",
+                  padding: "20px 18px 18px",
+                  minWidth: "min(82vw, 320px)",
+                  maxWidth: "320px",
+                  boxShadow: "0 16px 34px rgba(92,79,58,0.08)",
+                  transform: `rotate(${index % 2 === 0 ? "-1deg" : "1deg"})`,
+                  scrollSnapAlign: "start",
+                  flexShrink: 0,
+                }}
+              >
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.2em", color: "rgba(30,26,22,0.42)", textTransform: "uppercase", marginBottom: "12px" }}>{item.createdAt}</div>
+                <div style={{ fontFamily: "var(--font-display)", fontSize: "1.2rem", color: "#1e1a16", marginBottom: "8px" }}>{item.author}</div>
+                <p style={{ margin: 0, fontFamily: "var(--font-body)", fontSize: "14px", lineHeight: 1.8, color: "rgba(30,26,22,0.66)" }}>{item.message}</p>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ background: "#fff", border: "1px solid #ece6de", borderRadius: "22px", padding: "22px", maxWidth: "760px", margin: "0 auto" }}>
+            <div style={{ fontFamily: "var(--font-display)", fontSize: "1.6rem", marginBottom: "18px" }}>Leave a Message</div>
+            <form
+              onSubmit={(event) => {
+                event.preventDefault()
+                const form = event.currentTarget as HTMLFormElement
+                const formData = new FormData(form)
+                const author = String(formData.get('author') ?? '').trim()
+                const message = String(formData.get('message') ?? '').trim()
+                if (!author || !message) return
+
+                const nextMessage = {
+                  id: `board-${Date.now()}`,
+                  author,
+                  message,
+                  createdAt: new Date().toISOString().slice(0, 10),
+                }
+
+                setHachuBoardMessages((prev) => [nextMessage, ...prev])
+                form.reset()
+              }}
+              style={{ display: "grid", gap: "14px" }}
+            >
+              <label style={{ display: "grid", gap: "8px", fontFamily: "var(--font-body)", fontSize: "13px", color: "rgba(30,26,22,0.6)" }}>
+                Nickname
+                <input name="author" placeholder="Masukkan nickname" style={{ width: "100%", minWidth: 0, padding: "10px 12px", borderRadius: "10px", border: "1px solid #dcd6c9", fontFamily: "var(--font-body)", fontSize: "14px" }} />
+              </label>
+              <label style={{ display: "grid", gap: "8px", fontFamily: "var(--font-body)", fontSize: "13px", color: "rgba(30,26,22,0.6)" }}>
+                Pesan
+                <textarea name="message" rows={4} placeholder="Tulis dukungan atau pesan di sini..." style={{ width: "100%", minWidth: 0, padding: "10px 12px", borderRadius: "10px", border: "1px solid #dcd6c9", resize: "vertical", fontFamily: "var(--font-body)", fontSize: "14px" }} />
+              </label>
+              <button type="submit" style={{ width: "fit-content", padding: "10px 18px", borderRadius: "999px", border: "1px solid #c4d4bc", background: "#eef4ea", cursor: "pointer", fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase" }}>
+                Kirim pesan
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      {showQuizPage && (
+        <section
+          id="quiz-page"
+          style={{
+            background: "#faf9f6",
+            borderTop: "1px solid #ece6de",
+            paddingTop: "80px",
+            paddingBottom: "72px",
+          }}
+        >
+          <div style={{ maxWidth: "1100px", margin: "0 auto", paddingLeft: "32px", paddingRight: "32px" }}>
+            <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: "22px" }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowQuizPage(false)
+                  setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50)
+                }}
+                style={{
+                  padding: "10px 18px",
+                  borderRadius: "999px",
+                  border: "1px solid #d8d0c4",
+                  background: "#fff",
+                  color: "#2b2a29",
+                  cursor: "pointer",
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "10px",
+                  letterSpacing: "0.18em",
+                  textTransform: "uppercase",
+                }}
+              >
+                ← Back Home
+              </button>
+            </div>
+
+            <FadeIn style={{ textAlign: "center", marginBottom: "42px" }}>
+              <Label color="#8a9078">Quiz Time · Jiwoo Check</Label>
+              <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.8rem, 6vw, 4.5rem)", fontWeight: 300, color: "#1e1a16", lineHeight: 1.1, margin: "12px 0 0" }}>
+                How well do you know <em style={{ color: "#5d7a63", fontStyle: "italic" }}>Jiwoo</em>?
+              </h2>
+              <Divider color="rgba(30,26,22,0.08)" />
+              <p style={{ fontFamily: "var(--font-body)", fontStyle: "italic", fontSize: "15px", color: "rgba(30,26,22,0.5)", maxWidth: "520px", margin: "0 auto", lineHeight: 1.7 }}>
+                {jiwooQuiz.description}
+              </p>
+            </FadeIn>
+
+            {!quizSubmitted ? (
+              <div style={{ display: "grid", gap: "22px" }}>
+                {jiwooQuiz.questions.map((question, index) => {
+                  const selected = quizAnswers[question.id]
+                  return (
+                    <div key={question.id} style={{ background: "#fff", border: "1px solid #ece6de", borderRadius: "22px", padding: "22px" }}>
+                      <div style={{ fontFamily: "var(--font-display)", fontSize: "1.4rem", color: "#1e1a16", marginBottom: "14px" }}>
+                        {index + 1}. {question.prompt}
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px" }}>
+                        {question.options.map((option) => {
+                          const active = selected === option.id
+                          return (
+                            <button
+                              key={option.id}
+                              type="button"
+                              onClick={() =>
+                                setQuizAnswers((prev) => ({
+                                  ...prev,
+                                  [question.id]: option.id,
+                                }))
+                              }
+                              style={{
+                                width: "100%",
+                                textAlign: "left",
+                                padding: "14px 16px",
+                                borderRadius: "14px",
+                                border: active ? "1px solid #b8c8b0" : "1px solid #e6e1d8",
+                                background: active ? "#eef4ea" : "#fdfbf9",
+                                color: active ? "#365033" : "rgba(30,26,22,0.7)",
+                                cursor: "pointer",
+                                fontFamily: "var(--font-body)",
+                                fontSize: "14px",
+                                lineHeight: 1.5,
+                                transition: "all 0.2s ease",
+                              }}
+                            >
+                              {option.label}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })}
+
+                <div style={{ display: "flex", justifyContent: "center" }}>
+                  <button
+                    type="button"
+                    onClick={submitQuiz}
+                    disabled={!allQuizAnswered}
+                    style={{
+                      padding: "12px 24px",
+                      borderRadius: "999px",
+                      border: "1px solid #c4d4bc",
+                      background: allQuizAnswered ? "#eef4ea" : "#f0f0f0",
+                      color: allQuizAnswered ? "#3a5030" : "rgba(30,26,22,0.35)",
+                      cursor: allQuizAnswered ? "pointer" : "not-allowed",
+                      fontFamily: "var(--font-mono)",
+                      fontSize: "10px",
+                      letterSpacing: "0.18em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Submit Quiz
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div style={{ background: "#fff", border: "1px solid #ece6de", borderRadius: "26px", padding: "26px", display: "grid", gap: "22px" }}>
+                <div style={{ display: "grid", gap: "10px", justifyItems: "center", textAlign: "center" }}>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(30,26,22,0.45)" }}>Your result</span>
+                  <div style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.2rem, 5vw, 4rem)", lineHeight: 1, color: "#1e1a16" }}>
+                    {quizResult?.title}
+                  </div>
+                  <div style={{ fontFamily: "var(--font-body)", fontSize: "15px", color: "rgba(30,26,22,0.62)" }}>
+                    Score: {quizScore}%
+                  </div>
+                </div>
+
+                {quizResult && (
+                  <div style={{ display: "grid", gap: "18px", alignItems: "center", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}>
+                    <img
+                      src={quizResult.certificateImage}
+                      alt="Jiwoo certificate"
+                      style={{ width: "100%", maxWidth: "520px", borderRadius: "18px", boxShadow: "0 18px 32px rgba(0,0,0,0.08)", display: "block" }}
+                    />
+
+                    {quizMeme && (
+                      <div style={{ display: "grid", gap: "12px", justifyItems: "center" }}>
+                        <img
+                          src={quizMeme.src}
+                          alt={quizMeme.alt}
+                          style={{ width: "100%", maxWidth: "320px", borderRadius: "18px", display: "block", boxShadow: "0 18px 32px rgba(0,0,0,0.08)" }}
+                        />
+                        <p style={{ margin: 0, fontFamily: "var(--font-body)", fontSize: "15px", lineHeight: 1.7, color: "rgba(30,26,22,0.62)", textAlign: "center" }}>
+                          {quizResult.message}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div style={{ display: "flex", justifyContent: "center" }}>
+                  <button
+                    type="button"
+                    onClick={resetQuiz}
+                    style={{
+                      padding: "12px 24px",
+                      borderRadius: "999px",
+                      border: "1px solid #c4d4bc",
+                      background: "#eef4ea",
+                      color: "#3a5030",
+                      cursor: "pointer",
+                      fontFamily: "var(--font-mono)",
+                      fontSize: "10px",
+                      letterSpacing: "0.18em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Try Again
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {!showQuizPage && <ProfileSection sections={hobbySections} />}
 
       {/* ─── Footer ──────────────────────────────────────────────────────── */}
         </>
