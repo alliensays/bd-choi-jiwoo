@@ -78,6 +78,10 @@
 *.ttf                filter=lfs diff=lfs merge=lfs -text
 *.otf                filter=lfs diff=lfs merge=lfs -text
 *.woff               filter=lfs diff=lfs merge=lfs -text
+
+# Vercel must receive quiz images as regular static assets.
+public/quiz/*.jpeg   -filter -diff -merge
+public/quiz/*.png    -filter -diff -merge
 *.woff2              filter=lfs diff=lfs merge=lfs -text
 *.eot                filter=lfs diff=lfs merge=lfs -text
 
