@@ -245,7 +245,7 @@ export const jiwooQuiz: JiwooQuiz = {
       min: 1,
       max: 20,
       title: "Jiwoo-level: Rookie",
-      message: "You are still getting to know Jiwoo, but the vibes are cute and the journey is just starting.",
+      message: "OOOops! You are just starting to explore the world of Jiwoo. Keep learning and you'll get there!",
       certificateImage: "/quiz/certificate-rookie.svg",
       memePool: [
         { id: "r1-1", src: "/quiz/1.jpeg", alt: "Jiwoo meme 1" },

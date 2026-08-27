@@ -103,14 +103,19 @@ function migrateQuizMemePool(quiz: typeof initialJiwooQuiz) {
   return {
     ...quiz,
     resultRanges: quiz.resultRanges.map((range, index) => {
-      const hasLegacyMeme = range.memePool.some((meme) =>
+      const latestRange = initialJiwooQuiz.resultRanges[index]
+      const memePool = Array.isArray(range.memePool) ? range.memePool : []
+      const certificateImage =
+        !range.certificateImage || /certificate-template\.svg$/.test(range.certificateImage)
+          ? latestRange?.certificateImage ?? range.certificateImage
+          : range.certificateImage
+      const hasLegacyMeme = memePool.some((meme) =>
         /^\/quiz\/meme-\d+-\d+(?:-alt)?\.svg$/.test(meme.src),
       )
-      const latestRange = initialJiwooQuiz.resultRanges[index]
 
-      return hasLegacyMeme && latestRange
-        ? { ...range, memePool: latestRange.memePool }
-        : range
+      return latestRange && (hasLegacyMeme || memePool.length === 0)
+        ? { ...range, certificateImage, memePool: latestRange.memePool }
+        : { ...range, certificateImage, memePool }
     }),
   }
 }
