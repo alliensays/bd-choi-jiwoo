@@ -1,5 +1,6 @@
 import { useState } from "react"
 import type { HomeHero, MemberLetter, MomentPhoto, ClotheslinePhoto } from "../data"
+import "./BirthdayExperience.css"
 
 export type BirthdayStage =
   | "opening"
