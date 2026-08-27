@@ -118,17 +118,17 @@ export interface JiwooQuiz {
 
 // ─── Home hero content ─────────────────────────────────────────────────────
 export const homeHero: HomeHero = {
-  src: "https://kprofiles.com/wp-content/uploads/2025/02/JIWOO-533x800.jpg",
+  src: "https://i.pinimg.com/736x/fb/6f/b0/fb6fb06f9aeb6d154da8bb51d9c41b65.jpg",
   alt: "Jiwoo — Leader of Heart2Heart",
   nameAccent: "woo",
-  roleLine: "김지우 · Heart2Heart",
+  roleLine: "최지우 · Heart2Heart",
   quote: "Patience is bitter but its fruit is sweet.",
   scrollLabel: "Her Story",
 }
 
 export const homePhotos: HomePhoto[] = [
   {
-    src: "https://images.unsplash.com/photo-1593260853607-d0e0f639bdab?w=220&h=290&fit=crop&auto=format",
+    src: "https://i.pinimg.com/736x/fb/6f/b0/fb6fb06f9aeb6d154da8bb51d9c41b65.jpg",
     alt: "Jiwoo",
     rotate: -6,
     noteKr: "",
@@ -136,10 +136,10 @@ export const homePhotos: HomePhoto[] = [
     noteColor: "#f7f4ed",
     year: "",
     label: "",
-    style: { top: "14%", left: "18%", rotate: "-6deg", width: "130px" },
+    style: { top: "14%", left: "3%", rotate: "-6deg", width: "130px" },
   },
   {
-    src: "https://images.unsplash.com/photo-1696956994811-95c0a29c917c?w=200&h=260&fit=crop&auto=format",
+    src: "https://i.pinimg.com/736x/ca/ff/6d/caff6dafa44e5dcca8c66f214419c335.jpg",
     alt: "Jiwoo",
     rotate: 5,
     noteKr: "",
@@ -147,10 +147,10 @@ export const homePhotos: HomePhoto[] = [
     noteColor: "#f7f4ed",
     year: "",
     label: "",
-    style: { top: "11%", right: "19%", rotate: "5deg", width: "120px" },
+    style: { top: "10%", right: "4%", rotate: "5deg", width: "120px" },
   },
   {
-    src: "https://images.unsplash.com/photo-1671712292920-44d2e96d00d6?w=200&h=270&fit=crop&auto=format",
+    src: "https://i.pinimg.com/1200x/ed/14/88/ed1488b8719564f9422de8406858afbf.jpg",
     alt: "Jiwoo",
     rotate: -4,
     noteKr: "",
@@ -158,10 +158,10 @@ export const homePhotos: HomePhoto[] = [
     noteColor: "#f7f4ed",
     year: "",
     label: "",
-    style: { bottom: "14%", left: "20%", rotate: "-4deg", width: "115px" },
+    style: { bottom: "14%", left: "2%", rotate: "-4deg", width: "115px" },
   },
   {
-    src: "https://images.unsplash.com/photo-1541823709867-1b206113eafd?w=200&h=260&fit=crop&auto=format",
+    src: "https://i.pinimg.com/736x/2c/6d/de/2c6ddeed29fb1421ac99bfb9858a4828.jpg",
     alt: "Jiwoo",
     rotate: 7,
     noteKr: "",
@@ -169,10 +169,10 @@ export const homePhotos: HomePhoto[] = [
     noteColor: "#f7f4ed",
     year: "",
     label: "",
-    style: { bottom: "12%", right: "20%", rotate: "7deg", width: "120px" },
+    style: { bottom: "12%", right: "3%", rotate: "7deg", width: "120px" },
   },
   {
-    src: "https://images.unsplash.com/photo-1641351841616-faa0d3760980?w=180&h=240&fit=crop&auto=format",
+    src: "https://i.pinimg.com/736x/32/ea/f1/32eaf19cb681c62234fd4d1d8238578e.jpg",
     alt: "Jiwoo",
     rotate: -8,
     noteKr: "",
@@ -180,7 +180,18 @@ export const homePhotos: HomePhoto[] = [
     noteColor: "#f7f4ed",
     year: "",
     label: "",
-    style: { top: "44%", left: "32%", rotate: "-8deg", width: "100px" },
+    style: { top: "44%", left: "0.5%", rotate: "-8deg", width: "100px" },
+  },
+  {
+    src: "https://i.pinimg.com/1200x/a3/24/85/a32485826bc28b8a60499a10e1305a21.jpg",
+    alt: "Jiwoo",
+    rotate: 0,
+    noteKr: "",
+    noteText: "",
+    noteColor: "#f7f4ed",
+    year: "",
+    label: "",
+    style: { top: "10%", left: "3%", rotate: "0deg", width: "120px" },
   },
 ]
 
