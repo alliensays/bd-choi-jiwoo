@@ -3,6 +3,7 @@ import Clothesline from "./components/Clothesline"
 import ProfileSection from "./components/ProfileSection"
 import AdminPanel from "./components/AdminPanel"
 import LoginPage from "./components/LoginPage"
+import BirthdayExperience, { type BirthdayStage } from "./components/BirthdayExperience"
 import {
   homeHero as initialHomeHero,
   homePhotos as initialHomePhotos,
@@ -135,6 +136,7 @@ export default function App() {
   const [quizMeme, setQuizMeme] = useState<{ src: string; alt: string } | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
   const [showLoginPage, setShowLoginPage] = useState(false)
+  const [birthdayStage, setBirthdayStage] = useState<BirthdayStage>("opening")
   const [storyEntered, setStoryEntered] = useState(false)
   const [giftOpened, setGiftOpened] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -595,7 +597,20 @@ export default function App() {
     setQuizMeme(null)
   }
 
-  if (!isAdmin && !showLoginPage && !storyEntered) {
+  if (!isAdmin && !showLoginPage && birthdayStage !== "archive") {
+    return (
+      <BirthdayExperience
+        stage={birthdayStage}
+        homeHero={homeHero}
+        predebutPhotos={predebutPhotos}
+        momentPhotos={momentPhotos}
+        memberLetters={memberLetters}
+        onStageChange={setBirthdayStage}
+      />
+    )
+  }
+
+  if (false) {
     return (
       <div
         style={{
