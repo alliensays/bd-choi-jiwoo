@@ -1,0 +1,10 @@
+{
+  "description": "Celebrate your favorite K-pop idols' birthdays with personalized projects, including fan messages, gifts, and event planning tools for dedicated fans.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
