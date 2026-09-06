@@ -1,68 +1,739 @@
-.birthday-experience {
-  min-height: 100svh;
-  display: grid;
-  place-items: center;
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
-  color: #f7f2ea;
-  background: #1d2928;
+/* ══════════════════════════════════════════════════════════════════════════
+   JIWOO'S STORY — PURE EDITORIAL NARRATIVE FILM CANVAS (NO CARDS ON SCENES 1-6)
+   A Single Continuous Typographic Storytelling Experience (7 Major Scenes)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --color-warm-white: #faf9f6;
+  --color-cream: #f4eee6;
+  --color-text: #1e1a16;
+  --color-text-muted: rgba(30, 26, 22, 0.7);
+  --color-sage: #5a7050;
+  --color-sage-light: #eef3eb;
+  --color-border: #ece6de;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Lora', Georgia, serif;
+  --font-mono: 'DM Mono', monospace;
+  --font-handwrite: 'Caveat', cursive;
 }
 
-.birthday-experience::before {
-  content: '';
+/* ─── Persistent Full-Screen Canvas ──────────────────────────────────────── */
+.story-film-canvas.pure-narrative {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--color-warm-white);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  user-select: none;
+  cursor: pointer;
+  z-index: 100;
+  outline: none;
+}
+
+/* Ambient Warm Glow & Texture */
+.story-film-ambient {
   position: absolute;
   inset: 0;
-  z-index: -2;
-  background: radial-gradient(circle at 50% 42%, rgba(188, 164, 124, 0.2), transparent 38%), linear-gradient(135deg, #152120, #344846 55%, #171f20);
+  background: radial-gradient(circle at 50% 42%, rgba(255, 252, 245, 0.94), rgba(245, 239, 230, 0.98) 80%);
+  z-index: 0;
+  pointer-events: none;
 }
 
-.birthday-scene-glow {
+.story-film-grain {
   position: absolute;
-  width: 52vw;
-  height: 52vw;
-  max-width: 680px;
-  max-height: 680px;
-  border: 1px solid rgba(236, 220, 188, 0.16);
-  border-radius: 50%;
-  box-shadow: 0 0 120px rgba(225, 190, 129, 0.12);
-  animation: birthday-glow 8s ease-in-out infinite alternate;
-  z-index: -1;
+  inset: 0;
+  opacity: 0.035;
+  background-image: radial-gradient(#1e1a16 1px, transparent 0);
+  background-size: 24px 24px;
+  z-index: 1;
+  pointer-events: none;
 }
 
-.birthday-scene-content { width: min(980px, 88vw); padding: 72px 0 96px; text-align: center; animation: birthday-scene-in 650ms ease both; }
-.birthday-eyebrow, .birthday-scene-number { color: rgba(247, 242, 234, 0.56); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; }
-.birthday-scene-content h1 { max-width: 820px; margin: 18px auto; font-family: var(--font-display); font-size: clamp(2.8rem, 7vw, 6.8rem); font-weight: 300; line-height: 0.98; }
-.birthday-copy { max-width: 540px; margin: 0 auto 30px; color: rgba(247, 242, 234, 0.72); font-size: 16px; line-height: 1.8; }
-.birthday-frame-split { display: grid; grid-template-columns: 1fr 0.72fr; gap: 72px; align-items: center; text-align: left; }
-.birthday-frame-split .birthday-copy { margin-left: 0; }
-.birthday-hero-image { width: min(290px, 60vw); height: 390px; margin: auto; object-fit: cover; }
-.birthday-image { display: block; border: 8px solid rgba(247, 242, 234, 0.9); box-shadow: 0 22px 60px rgba(0, 0, 0, 0.28); }
-.birthday-memory-row { display: flex; justify-content: center; gap: 24px; margin: 38px auto; }
-.birthday-memory-row-wide { gap: 16px; }
-.birthday-memory-image { width: 180px; height: 240px; object-fit: cover; transform: rotate(-3deg); }
-.birthday-memory-image:nth-child(2) { transform: translateY(20px) rotate(4deg); }
-.birthday-memory-image:nth-child(3) { transform: rotate(-1deg); }
-.birthday-turning-point h1, .birthday-reveal h1 { color: #e2c58f; }
-.birthday-turning-point h1 { text-transform: uppercase; }
-.birthday-whisper { color: rgba(247, 242, 234, 0.65); font-size: 22px; line-height: 1.8; }
-.birthday-action { border: 1px solid rgba(226, 197, 143, 0.6); padding: 13px 22px; color: #f7f2ea; background: rgba(226, 197, 143, 0.12); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; transition: background 180ms ease, transform 180ms ease; }
-.birthday-action:hover { background: rgba(226, 197, 143, 0.24); transform: translateY(-2px); }
-.birthday-envelope { width: min(340px, 78vw); height: 220px; border: 1px solid rgba(226, 197, 143, 0.6); color: #2c3937; background: #e6d6b8; box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3); cursor: pointer; font-family: var(--font-display); font-size: 28px; transform: rotate(-2deg); transition: transform 220ms ease; }
-.birthday-envelope:hover { transform: rotate(0deg) translateY(-5px); }
-.birthday-letter { width: min(560px, 88vw); margin: auto; padding: 40px; color: #2b302d; background: #f7f0e3; box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3); text-align: left; line-height: 1.8; }
-.birthday-letter .birthday-action { margin-top: 18px; color: #2b302d; }
-.birthday-progress { position: absolute; right: 28px; bottom: 28px; display: flex; gap: 6px; }
-.birthday-progress span { width: 22px; height: 2px; background: rgba(247, 242, 234, 0.25); }
-.birthday-progress span.is-active { background: #e2c58f; }
-@keyframes birthday-scene-in { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes birthday-glow { from { transform: scale(0.92); opacity: 0.55; } to { transform: scale(1.06); opacity: 1; } }
-@media (max-width: 640px) {
-  .birthday-scene-content { padding: 56px 0 82px; }
-  .birthday-frame-split { grid-template-columns: 1fr; gap: 26px; text-align: center; }
-  .birthday-frame-split .birthday-copy { margin-left: auto; }
-  .birthday-memory-row { gap: 10px; }
-  .birthday-memory-image { width: 29vw; height: 38vw; border-width: 5px; }
-  .birthday-whisper { font-size: 18px; }
-  .birthday-letter { padding: 28px; }
+/* ─── Central Stage Viewport ─────────────────────────────────────────────── */
+.story-stage-viewport {
+  position: relative;
+  z-index: 10;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 48px;
+  box-sizing: border-box;
+}
+
+/* Scene Container */
+.story-scene-container.narrative-scene {
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto;
+  animation: narrativeSceneEnter 0.52s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes narrativeSceneEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(22px) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ─── Direct Floating Content (Scenes 01 to 06 - NO CARD / NO BOX) ───────── */
+.story-floating-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.story-badge-label {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--color-sage);
+  margin-bottom: 20px;
+  padding: 0;
+  background: transparent;
+}
+
+.story-display-serif {
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 5.2vw, 4.2rem);
+  font-weight: 300;
+  line-height: 1.15;
+  color: var(--color-text);
+  margin: 0 0 24px 0;
+  letter-spacing: -0.01em;
+}
+
+.story-display-serif em,
+.story-handwritten-note em,
+.finale-heading em {
+  font-style: italic;
+  color: var(--color-sage);
+}
+
+/* ─── Chapter 01: Prologue ───────────────────────────────────────────────── */
+.story-prose-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.story-lead-quote {
+  font-family: var(--font-body);
+  font-size: 18.5px;
+  line-height: 1.85;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.story-name-accent {
+  margin: 10px 0;
+}
+
+.story-name-accent span {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 4.2vw, 3.2rem);
+  font-weight: 300;
+  letter-spacing: 0.05em;
+  color: var(--color-text);
+}
+
+.story-handwritten-note {
+  font-family: var(--font-handwrite);
+  font-size: 24px;
+  color: var(--color-sage);
+  margin: 4px 0 0 0;
+}
+
+.story-click-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 36px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(30, 26, 22, 0.45);
+  animation: pulseHint 2.4s infinite ease-in-out;
+}
+
+.story-click-hint-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: var(--color-sage);
+}
+
+@keyframes pulseHint {
+  0%, 100% { opacity: 0.5; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-2px); }
+}
+
+/* ─── Chapter 02: 7 Years ────────────────────────────────────────────────── */
+.story-prose-opener {
+  font-family: var(--font-body);
+  font-size: 18px;
+  color: var(--color-text-muted);
+  margin: 0 0 8px 0;
+}
+
+.story-prose-subopener {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-style: italic;
+  color: var(--color-text);
+  margin: 0 0 20px 0;
+}
+
+.story-monumental-typography {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 18px;
+  margin: 10px 0 24px;
+  animation: numPop 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes numPop {
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.story-huge-number {
+  font-family: var(--font-display);
+  font-size: clamp(5.5rem, 12vw, 9rem);
+  font-weight: 300;
+  line-height: 0.85;
+  color: var(--color-sage);
+  letter-spacing: -0.05em;
+}
+
+.story-huge-unit {
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 6vw, 5rem);
+  font-weight: 300;
+  letter-spacing: 0.14em;
+  color: var(--color-text);
+}
+
+.story-clean-prose-passage {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.story-passage-main {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 17.5px;
+  line-height: 1.7;
+  color: #2a3550;
+  margin: 0;
+}
+
+.story-quote-divider {
+  width: 48px;
+  height: 1px;
+  background: rgba(90, 112, 80, 0.3);
+  margin: 16px auto;
+}
+
+.story-passage-sub {
+  font-family: var(--font-body);
+  font-size: 15.5px;
+  line-height: 1.75;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.story-passage-sub strong {
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+/* ─── Chapter 03: 2025 Debut ─────────────────────────────────────────────── */
+.story-clean-monument {
+  margin: 16px 0 24px 0;
+}
+
+.story-monument-year {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.4em;
+  color: var(--color-sage);
+  margin-bottom: 8px;
+}
+
+.story-monument-brand {
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 6.2vw, 4.8rem);
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  color: var(--color-text);
+  margin: 0 0 10px 0;
+}
+
+.story-monument-tagline {
+  display: block;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 17px;
+  color: var(--color-sage);
+}
+
+.story-song-lyric {
+  margin-top: 10px;
+}
+
+.story-song-lyric p {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 16px;
+  color: var(--color-text);
+  margin: 0 0 4px 0;
+}
+
+.story-song-lyric cite {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(30, 26, 22, 0.45);
+}
+
+/* ─── Chapter 04: Leadership ─────────────────────────────────────────────── */
+.story-prose-middle {
+  font-family: var(--font-body);
+  font-size: 17.5px;
+  color: var(--color-text-muted);
+  margin: 0 0 16px 0;
+}
+
+.story-leader-callout {
+  margin: 10px 0 22px;
+}
+
+.story-leader-sub {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 17px;
+  color: var(--color-text-muted);
+}
+
+.story-leader-huge {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 6.5vw, 5rem);
+  font-weight: 300;
+  color: var(--color-sage);
+  margin: 6px 0 0 0;
+  letter-spacing: 0.08em;
+}
+
+.story-clean-passage {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.story-clean-passage p {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.story-warm-accent-line {
+  font-family: var(--font-display) !important;
+  font-style: italic;
+  font-size: 18px !important;
+  color: var(--color-text) !important;
+  font-weight: 400;
+}
+
+/* ─── Chapter 05: Milestones ─────────────────────────────────────────────── */
+.story-clean-milestones-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0 28px 0;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-sage);
+}
+
+.story-milestone-sep {
+  color: rgba(30, 26, 22, 0.25);
+}
+
+.story-clean-letter-passage {
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+.story-letter-body {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 16.5px;
+  line-height: 1.8;
+  color: rgba(30, 26, 22, 0.85);
+  margin: 0 0 10px 0;
+}
+
+.story-letter-author {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-sage);
+}
+
+/* ─── Chapter 06: Retrospective ──────────────────────────────────────────── */
+.story-clean-retro-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 18px 0 26px 0;
+  text-align: left;
+  max-width: 580px;
+}
+
+.story-clean-retro-step {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+
+.story-retro-num {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--color-sage);
+  font-weight: 500;
+}
+
+.story-clean-retro-step p {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.story-clean-retro-climax {
+  margin-top: 10px;
+}
+
+.story-clean-retro-climax span {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 19px;
+  color: var(--color-sage);
+}
+
+/* ─── Chapter 07: Finale Birthday Tribute (The only scene with Card) ─────── */
+.story-editorial-card.finale-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 40px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(236, 230, 222, 0.8);
+  border-radius: 14px;
+  box-shadow: 0 16px 44px rgba(42, 35, 26, 0.05);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.finale-heading {
+  font-size: clamp(3rem, 6.5vw, 4.8rem);
+  margin: 8px 0 20px;
+}
+
+.story-blessing-paragraphs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.story-blessing-paragraphs p {
+  font-family: var(--font-body);
+  font-size: 16.5px;
+  line-height: 1.7;
+  color: rgba(30, 26, 22, 0.8);
+  margin: 0;
+}
+
+.story-promise-block {
+  margin-bottom: 22px;
+}
+
+.story-promise-quote {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 18px;
+  color: var(--color-sage);
+  margin: 0 0 6px 0;
+}
+
+.story-promise-detail {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.story-final-declaration {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 28px;
+}
+
+.story-declaration-title {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.story-declaration-heart {
+  font-family: var(--font-handwrite);
+  font-size: 22px;
+  color: var(--color-sage);
+}
+
+.story-portal-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.story-door-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--color-text);
+  color: var(--color-warm-white);
+  border: none;
+  padding: 16px 36px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 10px 28px rgba(30, 26, 22, 0.18);
+  transition: all 0.25s ease;
+}
+
+.story-door-btn:hover {
+  background: var(--color-sage);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px rgba(90, 112, 80, 0.28);
+}
+
+.story-door-arrow {
+  font-size: 13px;
+  transition: transform 0.2s ease;
+}
+
+.story-door-btn:hover .story-door-arrow {
+  transform: translateX(4px);
+}
+
+.story-door-note {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  color: rgba(30, 26, 22, 0.4);
+  text-transform: uppercase;
+}
+
+/* ─── Persistent Editorial Footer ────────────────────────────────────────── */
+.story-persistent-footer {
+  position: relative;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 44px;
+  border-top: 1px solid rgba(236, 230, 222, 0.6);
+}
+
+.story-scene-nav-prev {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(30, 26, 22, 0.45);
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 4px;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.story-scene-nav-prev:hover {
+  color: var(--color-text);
+  transform: translateX(-3px);
+}
+
+.story-steps-track {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.story-step-dot {
+  width: 24px;
+  height: 3px;
+  background: rgba(30, 26, 22, 0.15);
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.3s ease;
+}
+
+.story-step-dot.active {
+  width: 40px;
+  background: var(--color-sage);
+}
+
+.story-step-dot.completed {
+  background: rgba(90, 112, 80, 0.4);
+}
+
+.story-forward-prompt {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  cursor: pointer;
+  padding: 8px 14px;
+  transition: all 0.2s ease;
+}
+
+.story-forward-prompt:hover {
+  color: var(--color-sage);
+  transform: translateX(3px);
+}
+
+.story-forward-arrow {
+  font-size: 13px;
+  transition: transform 0.2s ease;
+}
+
+.story-forward-prompt:hover .story-forward-arrow {
+  transform: translateX(4px);
+}
+
+.story-finale-end-hint {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(30, 26, 22, 0.35);
+}
+
+/* ─── Transitions ────────────────────────────────────────────────────────── */
+.anim-trans-forward .story-scene-container {
+  animation: narrativeExitForward 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.anim-trans-backward .story-scene-container {
+  animation: narrativeExitBackward 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes narrativeExitForward {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.985);
+  }
+}
+
+@keyframes narrativeExitBackward {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.985);
+  }
+}
+
+/* ─── Mobile Responsiveness ──────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .story-persistent-footer {
+    padding: 16px 20px;
+  }
+
+  .story-stage-viewport {
+    padding: 16px 16px;
+    overflow-y: auto;
+  }
+
+  .story-editorial-card.finale-card {
+    padding: 32px 20px;
+  }
+
+  .story-display-serif {
+    font-size: clamp(2rem, 7vw, 2.8rem);
+  }
+
+  .story-huge-number {
+    font-size: 5rem;
+  }
+
+  .story-huge-unit {
+    font-size: 2.4rem;
+  }
+
+  .story-step-dot {
+    width: 14px;
+  }
+
+  .story-step-dot.active {
+    width: 24px;
+  }
 }

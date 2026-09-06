@@ -605,6 +605,7 @@ export default function App() {
         predebutPhotos={predebutPhotos}
         momentPhotos={momentPhotos}
         memberLetters={memberLetters}
+        comebacks={comebacks}
         onStageChange={setBirthdayStage}
       />
     )
