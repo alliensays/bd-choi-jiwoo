@@ -486,6 +486,27 @@ export default function App() {
     }
   }
 
+  const persistBoardMessages = async (messages: typeof initialBoardMessages) => {
+    const payload = { homeHero, homePhotos, predebutPhotos, comebacks, hobbySections, momentPhotos, memberLetters, hachuBoardMessages: messages, jiwooQuiz }
+
+    try {
+      const res = await fetch('/api/data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (res.ok) {
+        localStorage.setItem('hachuBoardMessages', JSON.stringify(messages))
+        return
+      }
+    } catch (err) {
+      // server failed — fall back to localStorage
+    }
+
+    localStorage.setItem('hachuBoardMessages', JSON.stringify(messages))
+  }
+
   const saveAll = () => {
     const payload = { homeHero, homePhotos, predebutPhotos, comebacks, hobbySections, momentPhotos, memberLetters, hachuBoardMessages, jiwooQuiz }
     ;(async () => {
@@ -1598,7 +1619,9 @@ export default function App() {
                   createdAt: new Date().toISOString().slice(0, 10),
                 }
 
-                setHachuBoardMessages((prev) => [nextMessage, ...prev])
+                const nextMessages = [nextMessage, ...hachuBoardMessages]
+                setHachuBoardMessages(nextMessages)
+                void persistBoardMessages(nextMessages)
                 form.reset()
               }}
               style={{ display: "grid", gap: "14px" }}
